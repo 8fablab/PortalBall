@@ -71,12 +71,14 @@ class areaCore extends area {
     body = box2d.createBody(bd);
     body.createFixture(sd, 1.0);
     
-    Filter ShapeFilter = new Filter();
-    ShapeFilter.categoryBits = 0x4;
-    ShapeFilter.maskBits = 0xFFFF;
+    if(type == areaCoreType.LAVA)
+    {
+      Filter ShapeFilter = new Filter();
+      ShapeFilter.groupIndex = -4;
+      body.getFixtureList().setFilterData(ShapeFilter);
+    }
     
-    body.getFixtureList().setFilterData(ShapeFilter);
-    body.setUserData(this);
+      body.setUserData(this);
    
   }
   

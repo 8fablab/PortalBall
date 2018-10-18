@@ -7,6 +7,9 @@ class player {
  int CurrentSize;
  int Size;
  
+ Vec2 Teleport;
+ Vec2 TeleportForce;
+ 
  ptx_color col;
  
  public PVector getP() {
@@ -21,6 +24,9 @@ class player {
   sCom = new PVector();
   CurrentSize = 4;
   Size = 4;
+  
+  Teleport = new Vec2(0, 0);
+  TeleportForce = new Vec2(0, 0);
 
   r = 40;
   
@@ -37,6 +43,9 @@ class player {
   sCom = new PVector();
   Size = 4;
   CurrentSize = 4;
+
+  Teleport = new Vec2(0, 0);
+  TeleportForce = new Vec2(0, 0);
 
   r = 60;
     
@@ -68,54 +77,16 @@ class player {
     reset();
    }
    
-   if(id <= 2)
+   if(Teleport.x != 0 && Teleport.y != 0)
    {
       Vec2 Velocity = body.getLinearVelocity();
+      float VelocityNorme = sqrt(Velocity.x*Velocity.x + Velocity.y*Velocity.y)*6;
+      body.setLinearVelocity(new Vec2(0, 0));
       
-      if(Math.abs(Velocity.x) < 10.0 && Velocity.x < 0)
-      {
-        Velocity.x = -10.0;         
-      }
-      
-      if(Math.abs(Velocity.x) < 10.0 && Velocity.x > 0)
-      {
-        Velocity.x = 10.0;         
-      }
-      
-      if(Math.abs(Velocity.y) < 10.0 && Velocity.y < 0)
-      {
-        Velocity.y = -10.0;         
-      }
-      
-      if(Math.abs(Velocity.y) < 10.0 && Velocity.y > 0)
-      {
-        Velocity.y = 10.0;         
-      }
-      
-      body.setLinearVelocity(Velocity);
-      
-   }
-   
-   if(id > 2)
-   {
-     // Moving
-     int k = 32;
-        
-     if(facing.x != 0) sCom.x = facing.x * k; else sCom.x *= 0.9;
-     if(facing.y != 0) sCom.y = facing.y * k; else sCom.y *= 0.9;
-     
-     //friction
-     a.set( - (s.x) / 10, 0);
-     s.add( a );      
-
-     body.setLinearVelocity(new Vec2(s.x + sCom.x, 0));
-   }
-   
-   if(CurrentSize != Size)
-   {
-      box2d.destroyBody(body);
-      makeBody(getP());
-      CurrentSize = Size;
+      System.out.println("Force x:" + TeleportForce.x + " y :" + TeleportForce.y);
+      body.applyLinearImpulse(new Vec2(VelocityNorme*TeleportForce.x, VelocityNorme*TeleportForce.y), body.getWorldCenter(), true);
+      body.setTransform(Teleport, 0);
+      Teleport = new Vec2(0, 0);
    }
  }
  
@@ -149,151 +120,43 @@ void reset() {
   
   box2d.destroyBody(body);
   makeBody();
+  
+  body.applyLinearImpulse(new Vec2(100*body.getMass()/3.14, 0.0), body.getWorldCenter(), true);
+  delay(1);
+  
  
   
  } 
-void reset(PVector p) {
-
-  s.set(0,0);
-  
-  a.set(0,0);
-     
-  facing.set(0,0);
-  sCom.set(0,0);
-  
-  box2d.destroyBody(body);
-  makeBody(p);
- 
-  
- }
- 
  
   // This function adds the rectangle to the box2d world
-  void makeBody() {
+  void makeBody()
+  {
     
     // Define the body and make it from the shape
     BodyDef bd = new BodyDef();    
     // Define a fixture
     FixtureDef fd = new FixtureDef();
-
-    if(id <= 2)
-    {
       
-      // Define a polygon (this is what we use for a rectangle)
-      CircleShape sd = new CircleShape();
-      sd.setRadius(box2d.scalarPixelsToWorld(r/2));
-      
-      fd.shape = sd;
-      // Parameters that affect physics
-      fd.density = 0.001;
-      fd.friction = 0.0;
-      fd.restitution = 0.9;
-      
-      bd.type = BodyType.DYNAMIC;
-      
-      fd.filter.groupIndex = 1;
-
-    }
+    // Define a polygon (this is what we use for a rectangle)
+    CircleShape sd = new CircleShape();
+    sd.setRadius(box2d.scalarPixelsToWorld(r/2));
     
-    else
-    {
-      // Define a polygon (this is what we use for a rectangle)
-      PolygonShape sd = new PolygonShape();
-      sd.setAsBox(box2d.scalarPixelsToWorld(25*Size/2), box2d.scalarPixelsToWorld(15));
-  
-      fd.shape = sd;
-      // Parameters that affect physics
-      fd.density = 100;
-      fd.friction = 0.0;
-      fd.restitution = 0.9;
-  
-      bd.type = BodyType.DYNAMIC;
-      
-      fd.filter.groupIndex = -1;
-    }
-         
-    if(id == 1 || id == 4)
-    {
-      fd.filter.categoryBits = 0x1;
-      fd.filter.maskBits = 0x6;
-    }
+    fd.shape = sd;
+    // Parameters that affect physics
+    fd.density = 1;
+    fd.friction = 0.0;
+    fd.restitution = 0.5;
     
-    if(id == 2 || id == 3)
-    {
-      fd.filter.categoryBits = 0x2;
-      fd.filter.maskBits = 0x05;        
-    }
+    bd.type = BodyType.DYNAMIC;
+    bd.linearDamping = 0.0;
+    
+    fd.filter.groupIndex = -4;
+     
 
     PVector p = new PVector();
-    switch(id) {
-    case 2: p.set(myPtxInter.mFbo.width/2+50, myPtxInter.mFbo.height-myPtxInter.mFbo.height/9 -30); break;
-    case 1: p.set(myPtxInter.mFbo.width/4+50, myPtxInter.mFbo.height-myPtxInter.mFbo.height/9 -30); break;
-    case 3: p.set(myPtxInter.mFbo.width/2, myPtxInter.mFbo.height-myPtxInter.mFbo.height/9); break;
-    case 4: p.set(myPtxInter.mFbo.width/4, myPtxInter.mFbo.height-myPtxInter.mFbo.height/9); break;
-    }
-    
-    bd.position.set(box2d.coordPixelsToWorld(p));
-
-    body = box2d.createBody(bd);
-    body.createFixture(fd);
-
-    body.setUserData(this);
-  }
-  
-    // This function adds the rectangle to the box2d world
-  void makeBody(PVector p) {
-    
-    // Define the body and make it from the shape
-    BodyDef bd = new BodyDef();    
-    // Define a fixture
-    FixtureDef fd = new FixtureDef();
-
-    if(id <= 2)
+    switch(id)
     {
-      
-      // Define a polygon (this is what we use for a rectangle)
-      CircleShape sd = new CircleShape();
-      sd.setRadius(box2d.scalarPixelsToWorld(r/2));
-      
-      fd.shape = sd;
-      // Parameters that affect physics
-      fd.density = 0.001;
-      fd.friction = 0.0;
-      fd.restitution = 0.9;
-      
-      bd.type = BodyType.DYNAMIC;
-      
-      fd.filter.groupIndex = 1;
-
-    }
-    
-    else
-    {
-      // Define a polygon (this is what we use for a rectangle)
-      PolygonShape sd = new PolygonShape();
-      sd.setAsBox(box2d.scalarPixelsToWorld(25*Size/2), box2d.scalarPixelsToWorld(15));
-  
-      fd.shape = sd;
-      // Parameters that affect physics
-      fd.density = 100;
-      fd.friction = 0.0;
-      fd.restitution = 0.9;
-  
-      bd.type = BodyType.DYNAMIC;
-      
-      fd.filter.groupIndex = -1;
-    }
-         
-    if(id == 1 || id == 4)
-    {
-      fd.filter.categoryBits = 0x1;
-      fd.filter.maskBits = 0x6;
-    }
-    
-    if(id == 2 || id == 3)
-    {
-      fd.filter.categoryBits = 0x2;
-      fd.filter.maskBits = 0x05;        
+      case 1: p.set(0, myPtxInter.mFbo.height/8); break;
     }
     
     bd.position.set(box2d.coordPixelsToWorld(p));

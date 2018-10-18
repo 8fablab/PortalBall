@@ -44,7 +44,7 @@ char configKey = 'h';
 Box2DProcessing box2d;
 ArrayList<areaCore> myMap;
 ArrayList<Object> myObj1, myObj2;
-player player1, player2, barPlayer1, barPlayer2;
+player player1;
 
 int ScoreP1 = 0, ScoreP2 = 0;
 
@@ -70,7 +70,7 @@ void setup() {
   box2d = new Box2DProcessing(this);
   box2d.createWorld();
   box2d.setScaleFactor(30);
-  box2d.setGravity(0,0);
+  box2d.setGravity(0,-0);
   box2d.listenForCollisions();
   
   
@@ -79,22 +79,14 @@ void setup() {
   Bump = new SoundFile(this, "saut.wav");
   
   myMap = new ArrayList<areaCore>(); 
-  print("pojpoj");
   myObj1 = new ArrayList<Object>();
   myObj2 = new ArrayList<Object>();
 
   player1 = new player(1);
-  player2 = new player(2);
-  
-  barPlayer1 = new player(3);
-  barPlayer2 = new player(4);
 }
 
 void reset() {
     player1.reset();
-    player2.reset();  
-    barPlayer1.reset();  
-    barPlayer2.reset();
     
     
     atScan();
@@ -135,9 +127,6 @@ void draw() {
  
   //UPDATE
   player1.updateMe();
-  player2.updateMe();
-  barPlayer1.updateMe();
-  barPlayer2.updateMe();
   box2d.step();
   
   myObj1.clear();
@@ -153,17 +142,7 @@ void draw() {
   for (areaCore it : myMap)
         myPtxInter.drawArea(it);
         
-  barPlayer1.drawMe();
-  barPlayer2.drawMe();
   player1.drawMe();
-  player2.drawMe();
-  
-    //Values
-  String ScoreStr = "Player 1 : "  + ScoreP1 + "\n"
-  + "Player 2 : "  + ScoreP2 +"\n";
-  
-  myPtxInter.mFbo.textAlign(LEFT);
-  myPtxInter.mFbo.text(ScoreStr, 50, 100);
 
   myPtxInter.mFbo.endDraw();
   myPtxInter.displayFBO();
@@ -225,14 +204,7 @@ void keyPressed() {
 
 
     switch(key) {
-    case 'q': barPlayer2.facing.x = -1; break;
-    case 's': player2.body.setLinearVelocity(new Vec2(0, 10)); break; 
-    case 'd': barPlayer2.facing.x =  1; break; 
-    
-    case 'k': barPlayer1.facing.x = -1; break;
-    case 'l': player1.body.setLinearVelocity(new Vec2(0, 10)); break; 
-    case 'm': barPlayer1.facing.x =  1; break; 
-      
+   
     case 'p' : reset();
     }
 }
@@ -246,14 +218,6 @@ void keyReleased() {
     return;
   }
   // ===== ======================= =====
-  
-  switch(key) {
-  case 'q': barPlayer2.facing.x = max(barPlayer2.facing.x, 0); break;
-  case 'd': barPlayer2.facing.x = min(barPlayer2.facing.x, 0); break;
-
-  case 'k': barPlayer1.facing.x = max(barPlayer1.facing.x, 0); break;
-  case 'm': barPlayer1.facing.x = min(barPlayer1.facing.x, 0); break;
-  }
   
 }
 
@@ -403,8 +367,8 @@ void beginContact(Contact cp  ) {
          
          BumpedVelocity.mult(1.5);
          
-         BumpedVelocity.x = (BumpedVelocity.x < 0 && Math.abs(BumpedVelocity.x) > 30) ? -30 : 30;
-         BumpedVelocity.y = (BumpedVelocity.y < 0 && Math.abs(BumpedVelocity.y) > 30) ? -30 : 30;
+         //BumpedVelocity.x = (BumpedVelocity.x < 0 && Math.abs(BumpedVelocity.x) > 30) ? -30 : 30;
+         //BumpedVelocity.y = (BumpedVelocity.y < 0 && Math.abs(BumpedVelocity.y) > 30) ? -30 : 30;
          
          
          Bump.play();
@@ -416,51 +380,95 @@ void beginContact(Contact cp  ) {
       
     }
     
-    else if(myA.type == areaCoreType.WALL)
-    {      
-        System.out.println("----> Points");
-        
-        if(myP.id == 1)
-          ScoreP1 += 10;
-        
-        if(myP.id == 2)
-          ScoreP2 += 10;
-          
-        Coin.play();
+    if(myA.type == areaCoreType.WALL)
+    {                
+      System.out.println("----> Wall");
+      Coin.play(); 
     }
     
-    else if(myA.type == areaCoreType.LAVA)
+    if(myA.type == areaCoreType.LAVA)
     {
+      System.out.println("----> Lava");
+    }
+    
+    if(myA.type == areaCoreType.VOID)
+    {
+        System.out.println("----> Void");
         Tuyau.play();
-        System.out.println("----> Shrink");
         
-        if(myP.id == 1)
+        for (areaCore it : myMap)
         {
-          if(barPlayer2.Size >= 1)
+          if(it.type == areaCoreType.LAVA)
           {
-             barPlayer2.Size--;
-          }
-          
-          else
-          {
-             barPlayer2.Size = 4;         
-          }
-        }
-        
-        if(myP.id == 2)
-        {
-          if(barPlayer1.Size >= 1)
-          {
-             barPlayer1.Size--;
-          }
-          
-          else
-          {
-             barPlayer1.Size = 4;          
-          }
+            if(it.myShape == area_shape.LINE)
+            {
+              System.out.println("----> Line");
+              PVector MeanDirection = new PVector(0, 0);
+              PVector Normale = new PVector(0, 0);
+              int i = 0;
+              
+              while( i < it.listContour.get(0).size()/2)
+              {              
+                float xa = 0, xb = 0, ya = 0, yb = 0, a = 0, b = 0;
+                float c = 0, d = 0; //Vecteur normale
+                float n = 0;
+                int j = 0;
+                
+                xa = it.listContour.get(0).get(i).x;
+                xb = xa;
+                ya = it.listContour.get(0).get(i).y;
+                yb = ya;
+                
+                while(abs(xa-xb) < 15 && abs(ya-yb) < 15)
+                {
+                   j++;
+                   
+                   if(i+j >= it.listContour.get(0).size()-1)
+                   {
+                     j = it.listContour.get(0).size()-1;
+                     i = it.listContour.get(0).size()-1;
+                                                         
+                     xb = it.listContour.get(0).get(i).x;
+                     yb = it.listContour.get(0).get(i).y;
+                     
+                     break;
+                   }
+                   
+                   else
+                   {
+                     xb = it.listContour.get(0).get(i+j).x;
+                     yb = it.listContour.get(0).get(i+j).y;
+                   }
+                }
+                
+                i = i + j;
+                if(i >= it.listContour.get(0).size()-1)
+                  i = it.listContour.get(0).size()-1;
+                  
+                System.out.println(":xa:" + xa + ":ya:" + ya+":xb:" + xb + ":yb:" + yb + ":nx:" + Normale.x + ":ny:" + Normale.y);
+           
+                Normale.x = yb - ya;
+                Normale.y = xb - xa;
+                
+                //System.out.println("Force x:" + Normale.x + " y :" + Normale.y);
 
+                MeanDirection.add(Normale);
+
+              }
+              
+              MeanDirection.div(it.listContour.get(0).size());
+              MeanDirection.normalize();
+                                
+              player1.TeleportForce = new Vec2(MeanDirection.x, MeanDirection.y);
+              player1.Teleport = box2d.coordPixelsToWorld(it.center.x, it.center.y);
+              System.out.println("----> Teleport x:" + player1.Teleport.x + " y:" + player1.Teleport.y);
+              break;
+            }
+          }
         }
     }
+    
+    
     
   }
   
