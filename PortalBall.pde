@@ -19,7 +19,7 @@ import java.util.Set;
 // ===== 1) ROOT LIBRARY =====
 boolean isScanning, isInConfig;
 ptx_inter myPtxInter;
-char scanKey = '8';
+char scanKey = ' ';
 char configKey = 'h';
 // ===== =============== =====
 
@@ -70,7 +70,7 @@ void setup() {
   box2d = new Box2DProcessing(this);
   box2d.createWorld();
   box2d.setScaleFactor(30);
-  box2d.setGravity(0,-0);
+  box2d.setGravity(0,-40);
   box2d.listenForCollisions();
   
   
