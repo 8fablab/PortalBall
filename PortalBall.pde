@@ -371,7 +371,8 @@ void beginContact(Contact cp  ) {
          //BumpedVelocity.y = (BumpedVelocity.y < 0 && Math.abs(BumpedVelocity.y) > 30) ? -30 : 30;
          
          
-         Bump.play();
+         if(!Bump.isPlaying())
+           Bump.play();
          
          myP.body.setLinearVelocity(new Vec2(BumpedVelocity.x, BumpedVelocity.y));
       }
@@ -383,7 +384,9 @@ void beginContact(Contact cp  ) {
     if(myA.type == areaCoreType.WALL)
     {                
       System.out.println("----> Wall");
-      Coin.play(); 
+      
+      if(!Coin.isPlaying())
+        Coin.play(); 
     }
     
     if(myA.type == areaCoreType.LAVA)
@@ -394,7 +397,9 @@ void beginContact(Contact cp  ) {
     if(myA.type == areaCoreType.VOID)
     {
         System.out.println("----> Void");
-        Tuyau.play();
+        
+        if(!Tuyau.isPlaying())
+          Tuyau.play();
         
         for (areaCore it : myMap)
         {
