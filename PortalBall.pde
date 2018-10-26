@@ -21,7 +21,17 @@ boolean isScanning, isInConfig;
 ptx_inter myPtxInter;
 char scanKey = ' ';
 char configKey = 'h';
+char switchAutoLaunch = 'm';
 // ===== =============== =====
+
+//Gravité
+/*  Vide intersidéral --> 0.0
+/*  Terre --> 9.81
+/*  Mars --> 
+/*  Lune -->
+*/
+
+float Gravity = 0.0;
 
 
 // TODO: HERITAGE CONSTRUCTEUR DANS AREACORE + typeArea : BUMP, WALL,  LAVA ...
@@ -46,7 +56,8 @@ ArrayList<areaCore> myMap;
 ArrayList<Object> myObj1, myObj2;
 player player1;
 
-int ScoreP1 = 0, ScoreP2 = 0;
+int ScoreP1 = 0, HiScore = 0;
+boolean AutoLaunch = false;
 
 SoundFile Coin;
 SoundFile Tuyau;
@@ -70,7 +81,7 @@ void setup() {
   box2d = new Box2DProcessing(this);
   box2d.createWorld();
   box2d.setScaleFactor(30);
-  box2d.setGravity(0,-40);
+  box2d.setGravity(0,-4.0*Gravity);
   box2d.listenForCollisions();
   
   
@@ -143,6 +154,13 @@ void draw() {
         myPtxInter.drawArea(it);
         
   player1.drawMe();
+  
+    String ScoreStr = "Score : "  + ScoreP1 + "\n"
+  + "HiScore: "  + HiScore +"\n";
+  
+  myPtxInter.mFbo.textAlign(LEFT);
+  myPtxInter.mFbo.fill(255, 255, 255);
+  myPtxInter.mFbo.text(ScoreStr, 50, 100);
 
   myPtxInter.mFbo.endDraw();
   myPtxInter.displayFBO();
@@ -191,6 +209,9 @@ void keyPressed() {
   if (key == scanKey && !isScanning) {
     myPtxInter.whiteCtp = 0;
     isScanning = true;
+    player1.reset();
+    if(ScoreP1 > HiScore)
+      HiScore = ScoreP1;
     return;
   }
 
@@ -202,6 +223,9 @@ void keyPressed() {
 
   // ===== ================================= =====    
 
+    if(key == switchAutoLaunch)
+      player1.AutoLaunch = !player1.AutoLaunch;
+      
 
     switch(key) {
    
@@ -386,7 +410,15 @@ void beginContact(Contact cp  ) {
       System.out.println("----> Wall");
       
       if(!Coin.isPlaying())
-        Coin.play(); 
+      {
+        Coin.play();
+        ScoreP1++;
+        if(ScoreP1 > HiScore)
+          HiScore = ScoreP1;
+          
+
+      }
+        
     }
     
     if(myA.type == areaCoreType.LAVA)

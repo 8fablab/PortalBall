@@ -34,7 +34,7 @@ public enum DIRECTION { EAST, WEST, NORTH, SOUTH };
 * @version 0.7
 *
 **/
- //<>// //<>//
+ //<>// //<>// //<>//
 public class ptx {
 
   ArrayList<area> listArea; 
@@ -205,7 +205,7 @@ public class ptx {
 
         // TEST SI PAS HORS IMAGE  
         if (ii < _wBef && jj < _hBef && ii > 0 && jj > 0) {
-          _out.pixels[j*_wAft + i] = _in.pixels[jj*_wBef + ii]; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
+          _out.pixels[j*_wAft + i] = _in.pixels[jj*_wBef + ii]; //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>// //<>//
         }
       }
 

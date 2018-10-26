@@ -7,6 +7,8 @@ class player {
  int CurrentSize;
  int Size;
  
+ boolean AutoLaunch;
+ 
  Vec2 Teleport;
  Vec2 TeleportForce;
  
@@ -24,6 +26,7 @@ class player {
   sCom = new PVector();
   CurrentSize = 4;
   Size = 4;
+  AutoLaunch = false;
   
   Teleport = new Vec2(0, 0);
   TeleportForce = new Vec2(0, 0);
@@ -43,6 +46,7 @@ class player {
   sCom = new PVector();
   Size = 4;
   CurrentSize = 4;
+  AutoLaunch = false;
 
   Teleport = new Vec2(0, 0);
   TeleportForce = new Vec2(0, 0);
@@ -69,12 +73,10 @@ class player {
    || 0 > getP().y || getP().y > myPtxInter.mFbo.height) 
    { // Outside of the square game field
    
-    if(id == 1 ||id == 3)
-      ScoreP1 -= 5; 
-    if(id == 2 ||id == 4)
-      ScoreP2 -= 5; 
+    if(AutoLaunch)
+      reset();
+
       
-    reset();
    }
    
    if(Teleport.x != 0 && Teleport.y != 0)
@@ -121,11 +123,10 @@ void reset() {
   box2d.destroyBody(body);
   makeBody();
   
+  
+  ScoreP1 = 0;
+  
   body.applyLinearImpulse(new Vec2(100*body.getMass()/3.14, 0.0), body.getWorldCenter(), true);
-  delay(1);
-  
- 
-  
  } 
  
   // This function adds the rectangle to the box2d world
